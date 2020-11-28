@@ -3,6 +3,7 @@ import React, { useState, useCallback, useLayoutEffect } from "react";
 import { Container } from "./styles";
 import useModelScroll from "../useWrapperScroll";
 import { CarModel } from "../ModelsContext";
+import { useTransform, motionValue } from "framer-motion";
 
 interface Props {
   model: CarModel;
@@ -33,7 +34,21 @@ const ModelOverlay: React.FC<Props> = ({ children, model }) => {
     return () => window.removeEventListener("resize", onResize);
   }, [getSectionDimensions]);
 
-  return <Container>{children}</Container>;
+  const sectionScrollProgress = useTransform(
+    scrollY,
+    (y) => (y - dimension.offsetTop) / dimension.offsetHeight
+  );
+
+  const opacity = useTransform(
+    sectionScrollProgress,
+    [-0.42, -0.05, 0.05, 0.42],
+    [0, 1, 1, 0]
+  );
+
+  const pointerEvents = useTransform(opacity, (value) =>
+    value > 0 ? "auto" : "none"
+  );
+  return <Container style={{ opacity, pointerEvents }}>{children}</Container>;
 };
 
 export default ModelOverlay;
